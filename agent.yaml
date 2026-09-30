@@ -1,0 +1,11 @@
+spec_version: "0.1.0"
+name: dataset-lineage-validator
+version: 0.1.0
+description: "Validates declared data lineage edges for missing nodes, duplicate edges, self-links, and cycles."
+skills:
+  - dataset-lineage-validator-skill
+tools:
+  - audit-dataset-lineage-validator
+tags:
+  - "data-governance"
+  - evidence-driven

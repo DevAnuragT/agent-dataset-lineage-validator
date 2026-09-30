@@ -1,0 +1,19 @@
+name: audit-dataset-lineage-validator
+description: Run the Dataset Lineage Validator deterministic analyzer
+version: 0.1.0
+input_schema:
+  type: object
+  properties:
+    payload:
+      type: object
+      description: JSON payload matching the agent input contract
+  required: [payload]
+output_schema:
+  type: object
+  properties:
+    findings: {type: array}
+    valid: {type: boolean}
+implementation:
+  type: script
+  path: audit-dataset-lineage-validator.py
+  runtime: python3

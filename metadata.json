@@ -1,0 +1,52 @@
+{
+  "slug": "dataset-lineage-validator",
+  "title": "Dataset Lineage Validator",
+  "category": "Data Governance",
+  "description": "Validates declared data lineage edges for missing nodes, duplicate edges, self-links, and cycles.",
+  "decision": "A lineage graph passes when every edge references declared nodes and the directed graph is acyclic.",
+  "inputs": "The caller supplies unique node identifiers and directed source-to-target edges.",
+  "limitations": "This checks structural lineage declarations only. It cannot verify that transformations actually ran or that source data is accurate.",
+  "good": {
+    "nodes": [
+      "raw",
+      "clean",
+      "report"
+    ],
+    "edges": [
+      {
+        "source": "raw",
+        "target": "clean"
+      },
+      {
+        "source": "clean",
+        "target": "report"
+      }
+    ]
+  },
+  "bad": {
+    "nodes": [
+      "raw",
+      "clean"
+    ],
+    "edges": [
+      {
+        "source": "raw",
+        "target": "clean"
+      },
+      {
+        "source": "clean",
+        "target": "raw"
+      },
+      {
+        "source": "unknown",
+        "target": "clean"
+      }
+    ]
+  },
+  "body": "\n        nodes=payload.get(\"nodes\"); edges=payload.get(\"edges\")\n        if not isinstance(nodes,list) or not isinstance(edges,list): raise ValueError(\"nodes and edges are required\")\n        known=set(nodes)\n        if len(known)!=len(nodes) or any(not isinstance(n,str) or not n for n in nodes): findings.append(\"node IDs must be unique non-empty strings\")\n        graph={n:[] for n in known}; seen=set()\n        for e in edges:\n            if not isinstance(e,dict): raise ValueError(\"edges must be objects\")\n            a=e.get(\"source\"); b=e.get(\"target\")\n            if a not in known or b not in known: findings.append(f\"edge references undeclared node: {a} -> {b}\"); continue\n            if a==b: findings.append(f\"self-link at {a}\")\n            if (a,b) in seen: findings.append(f\"duplicate edge {a} -> {b}\")\n            seen.add((a,b)); graph[a].append(b)\n        visiting=set(); visited=set()\n        def visit(n):\n            if n in visiting: return True\n            if n in visited: return False\n            visiting.add(n)\n            cycle=any(visit(child) for child in graph[n])\n            visiting.remove(n); visited.add(n)\n            return cycle\n        if any(visit(n) for n in graph if n not in visited): findings.append(\"lineage graph contains a directed cycle\")\n        ",
+  "runtime": "Python 3.9+ standard library",
+  "input_schema": {
+    "type": "object",
+    "description": "The caller supplies unique node identifiers and directed source-to-target edges."
+  }
+}

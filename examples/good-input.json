@@ -1,0 +1,17 @@
+{
+  "nodes": [
+    "raw",
+    "clean",
+    "report"
+  ],
+  "edges": [
+    {
+      "source": "raw",
+      "target": "clean"
+    },
+    {
+      "source": "clean",
+      "target": "report"
+    }
+  ]
+}
